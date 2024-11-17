@@ -26,55 +26,55 @@ module decoder(
 	output logic [31:0] imm
  );
 /* 		Decode Signal Description
-_____________________________________________________
-|	is_pc 		= 1'b1 	-> operand A = pc			|
+_________________________________________________________________
+|	is_pc 		= 1'b1 	-> operand A = pc		|
 |	is_pc		= 1'b0 	-> operand A = rs1_data		|
-|___________________________________________________|
+|_______________________________________________________________|
 |	op_b_sel	= 2'b00 -> operand B = rs2_data		|
-|	op_b_sel	= 2'b01 -> operand B = imm			|
+|	op_b_sel	= 2'b01 -> operand B = imm		|
 |	op_b_sel	= 2'b10 -> operand B = 32'h4		|
 |	op_b_sel	= 2'b11 -> operand B = 32'd0		|
-|___________________________________________________|
-|				alu_ctrl							|
-|	_________________________________				|
-|	|	Value		|	Operation	|				|	
-|	|	4'b0000		|	ADD			|				|
-|	|	4'b0001		|	SUB			|				|
-|	|	4'b0010		|	SLL, SLLI	|				|
-|	|	4'b0011		|	SLT, SLTI	|				|
-|	|	4'b0100		|	SRA, SRAI	|				|
-|	|	4'b0101		|	XOR, XORI	|				|
-|	|	4'b0110		|	SRL, SRLI	|				|
-|	|	4'b0111		|	SLTU, SLTUI	|				|
-|	|	4'b1000		|	OR, ORI		|				|
-|	|	4'b1001		|	AND, ANDI	|				|
-|	_________________________________				|
-|___________________________________________________|
-|	mem_size = 4'b0001 -> BYTE						|
-|	mem_size = 4'b0010 -> HALFWORD					|
-|	mem_size = 4'b0011 -> WORD						|
-|___________________________________________________|
-|	bru_op		= 3'b000 -> NONE					|
-|	bru_op		= 3'b001 -> BNE						|
-|	bru_op		= 3'b010 -> BLT, BLTU				|
-|	bru_op		= 3'b011 -> BGE, BGEU				|
-|	bru_op		= 3'b100 -> JAL						|
-|	bru_op		= 3'b101 -> JALR					|
-|	bru_op		= 3'b110 -> BEQ						|
-_____________________________________________________
-///////////////////////////////////////////////*/
+|_______________________________________________________________|
+|				alu_ctrl			|
+|	________________________________________________	|
+|	|	Value		|	Operation	|	|	
+|	|	4'b0000		|	ADD		|	|
+|	|	4'b0001		|	SUB		|	|
+|	|	4'b0010		|	SLL, SLLI	|	|
+|	|	4'b0011		|	SLT, SLTI	|	|
+|	|	4'b0100		|	SRA, SRAI	|	|
+|	|	4'b0101		|	XOR, XORI	|	|
+|	|	4'b0110		|	SRL, SRLI	|	|
+|	|	4'b0111		|	SLTU, SLTUI	|	|
+|	|	4'b1000		|	OR, ORI		|	|
+|	|	4'b1001		|	AND, ANDI	|	|
+|	________________________________________________	|
+|_______________________________________________________________|
+|	mem_size = 4'b0001 -> BYTE				|
+|	mem_size = 4'b0010 -> HALFWORD				|
+|	mem_size = 4'b0011 -> WORD				|
+|_______________________________________________________________|
+|	bru_op		= 3'b000 -> NONE			|
+|	bru_op		= 3'b001 -> BNE				|
+|	bru_op		= 3'b010 -> BLT, BLTU			|
+|	bru_op		= 3'b011 -> BGE, BGEU			|
+|	bru_op		= 3'b100 -> JAL				|
+|	bru_op		= 3'b101 -> JALR			|
+|	bru_op		= 3'b110 -> BEQ				|
+________________________________________________________________|
+///////////////////////////////////////////////////////////////*/
 
 	// Opcodes - RV32 Instruction Set Listings
-	localparam R_TYPE	= 5'b011_00;
-	localparam I_TYPE	= 5'b001_00;
-	localparam LOAD_OP	= 5'b000_00;
-	localparam E_OP		= 5'b111_00; // ecall, ebreak
-	localparam JALR_OP	= 5'b110_01;
-	localparam S_TYPE	= 5'b010_00;
-	localparam B_TYPE	= 5'b110_00;
-	localparam J_TYPE	= 5'b110_11;
-	localparam LUI_OP	= 5'b011_01; // lui
-	localparam AUIPC_OP	= 5'b001_01;
+	localparam R_TYPE	= 5'b011_0011;
+	localparam I_TYPE	= 5'b001_0011;
+	localparam LOAD_OP	= 5'b000_0011;
+	localparam E_OP		= 5'b111_0011; // ecall, ebreak
+	localparam JALR_OP	= 5'b110_0111;
+	localparam S_TYPE	= 5'b010_0011;
+	localparam B_TYPE	= 5'b110_0011;
+	localparam J_TYPE	= 5'b110_1111;
+	localparam LUI_OP	= 5'b011_0111; // lui
+	localparam AUIPC_OP	= 5'b001_0111;
   
   	// Opcodes - RV32 Instruction Set Listings
 	localparam ADD	= 4'b0000;
@@ -116,7 +116,7 @@ _____________________________________________________
 		mem_unsign	= 1'b0;
 		mem_load	= 1'b0;
 		imm			= 32'd0;
-		case (instr[6:2])
+		case (instr[6:0])
 			R_TYPE	: begin
 				rs1_addr 	= instr[19:15];
 				rs2_addr 	= instr[24:20];
