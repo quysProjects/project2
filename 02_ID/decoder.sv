@@ -9,7 +9,7 @@ module decoder(
 
 	//--- Control Execute ---
 	output logic 		is_pc		,
-	output logic [1:0] 	op_b_sel	,
+	output logic [1:0] 	op_b_sel	,aaaaaa
 	output logic [3:0] 	alu_ctrl	,
   
 	//--- Control Branch Unit ---
