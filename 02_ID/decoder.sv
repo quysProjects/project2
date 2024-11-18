@@ -19,7 +19,7 @@ module decoder(
 	
 	//--- Control Memory ---
 	output logic 		mem_wren	,
-	output logic [3:0] 	mem_size	,
+	output logic [2:0] 	mem_size	,
 	output logic		mem_load	,
 	output logic 		mem_unsign	,
 	
@@ -97,9 +97,9 @@ ________________________________________________________________|
 	localparam JALR	= 3'b101;
 	localparam BEQ 	= 3'b110;
 	
-	localparam BYTE 	= 4'b0001;
-	localparam HALFWORD = 4'b0011;
-	localparam WORD		= 4'b1111;
+	localparam BYTE 	= 3'b000;
+	localparam HALFWORD     = 3'b001;
+	localparam WORD		= 3'b010;
 	always_comb begin
 		rs1_addr 	= 5'd0;
 		rs2_addr 	= 5'd0;
@@ -112,7 +112,7 @@ ________________________________________________________________|
 		bru_op		= 3'd0;
 		bru_unsign	= 1'b0;
 		mem_wren	= 1'b0;
-		mem_size	= 4'd0;
+		mem_size	= 3'd0;
 		mem_unsign	= 1'b0;
 		mem_load	= 1'b0;
 		imm			= 32'd0;
@@ -128,7 +128,7 @@ ________________________________________________________________|
 				bru_op		= NONE;
 				bru_unsign	= 1'b0;
 				mem_wren	= 1'b0;
-				mem_size	= 4'd0;
+				mem_size	= 3'd0;
 				mem_unsign	= 1'b0;
 				mem_load	= 1'b0;
 				imm			= 32'd0;
@@ -157,7 +157,7 @@ ________________________________________________________________|
 				bru_op		= NONE;
 				bru_unsign	= 1'b0;
 				mem_wren	= 1'b0;
-				mem_size	= 4'd0;
+				mem_size	= 3'd0;
 				mem_unsign	= 1'b0;
 				mem_load	= 1'b0;
 				imm			= {{20{instr[31]}},instr[31:20]};
@@ -210,7 +210,7 @@ ________________________________________________________________|
 								mem_unsign = 1'b1;
 					end
 					default: begin
-								mem_size 	= 4'b0000;
+								mem_size 	= 3'b000;
 								mem_unsign 	= 1'b0;
 					end			
 				endcase						
@@ -226,7 +226,7 @@ ________________________________________________________________|
 				bru_op		= JALR;
 				bru_unsign	= 1'b0;
 				mem_wren	= 1'b0;
-				mem_size	= 4'd0;
+				mem_size	= 3'd0;
 				mem_unsign	= 1'b0;
 				mem_load	= 1'b0;
 				imm			= {20'd0,instr[31:20]};
@@ -271,7 +271,7 @@ ________________________________________________________________|
 				alu_ctrl	= SUB;
 				bru_en		= 1'b1;
 				mem_wren	= 1'b0;
-				mem_size	= 4'd0;
+				mem_size	= 3'd0;
 				mem_unsign	= 1'b0;
 				mem_load	= 1'b0;
 				imm			= {{19{instr[31]}},instr[31],instr[7],instr[30:25],instr[11:8],1'b0};
@@ -318,7 +318,7 @@ ________________________________________________________________|
 				bru_op		= JAL;
 				bru_unsign	= 1'b0;
 				mem_wren	= 1'b0;
-				mem_size	= 4'd0;
+				mem_size	= 3'd0;
 				mem_unsign	= 1'b0;
 				mem_load	= 1'b0;
 				imm			= {{12{instr[31]}},instr[19:12],instr[20],instr[30:25],instr[24:21],1'b0};
@@ -335,7 +335,7 @@ ________________________________________________________________|
 				bru_op		= NONE;
 				bru_unsign	= 1'b0;
 				mem_wren	= 1'b0;
-				mem_size	= 4'd0;
+				mem_size	= 3'd0;
 				mem_unsign	= 1'b0;
 				mem_load	= 1'b0;
 				imm			= {instr[31:12],12'd0};
@@ -350,7 +350,7 @@ ________________________________________________________________|
 				alu_ctrl	= ADD;
 				bru_en		= 1'b1;
 				mem_wren	= 1'b0;
-				mem_size	= 4'd0;
+				mem_size	= 3'd0;
 				mem_unsign	= 1'b0;
 				mem_load	= 1'b0;
 				imm			= {11'd0,instr[31],instr[19:12],instr[20],instr[24:21],1'b0};
