@@ -63,16 +63,16 @@ Manager_AHB Master(
     .HRESETn(rst_ni),
     .HTRANS(HTRANS), 
     .HWRITE(HWRITE),
-    .HSIZE(HSIZE),     // Transfer size***
+    .HSIZE(HSIZE),     // Transfer size**
     .HBURST(BURST),    // Burst type***
     .HPROT(HPROT),  
-    .HADDR(HADDR),     // Address bus
+    .HADDR(HADDR),    
     .HWDATA(HWDATA),
     .HRDATA(HRDATA),
     .HREADY(1'b1), 
     .HRESP(1'b0),     // Transfer response***
-	.i_core_mngr_unsign(memory_signals.mem_unsign),
-	.o_mngr_sub_unsign(unsign),//****
+    .i_core_mngr_unsign(memory_signals.mem_unsign),
+     .o_mngr_sub_unsign(unsign),//****
     .req_read(memory_signals.mem_load), 
     .req_write(memory_signals.mem_wren),  
     .req_addr(Result_M),
