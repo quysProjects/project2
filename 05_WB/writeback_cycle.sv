@@ -1,14 +1,14 @@
 import riscv_types::*;
 module writeback_cycle(
-	input  logic 		clk_i				,
-	input  logic 		rst_ni				,
+	input  logic 		clk_i			,
+	input  logic 		rst_ni			,
 	
-	input  writeback_info writeback_signals	,
-	input  logic [31:0] Result_W			,
-	input  logic [31:0] ld_data_W			,
+	input  writeback_info 	writeback_signals	,
+	input  logic [31:0] 	Result_W		,
+	input  logic [31:0] 	ld_data_W		,
 
-	output logic [ 4:0] rd_addr_W			,
-	output logic [31:0] rd_data_W			,
+	output logic [ 4:0] 	rd_addr_W		,
+	output logic [31:0] 	rd_data_W		,
 	output logic 		rd_wr_W
 );
 
