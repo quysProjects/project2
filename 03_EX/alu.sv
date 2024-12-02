@@ -54,24 +54,22 @@ module alu(
   assign {cout,sum} = operand_a + mux_1 + ALUControl[0];
 
   // Set less than
-  //assign slt = 
-
   assign slt = {31'd0,sum[31]};
-
   assign sltu = {31'd0,~cout};
 
   // Shift (Left, Right, Right Arithmetic)
-  // --- shift_sel = funct3[2] = 0? left : right;
-  shift_left shift_left( // dich trai thanh ghi rs1 di imm bit
+  shift_left shift_left(
       .rs1(operand_a),
       .imm(operand_b[4:0]),
       .rd_left(a_shift_left_b)
       );
+  
   shift_right shift_right(
       .rs1(operand_a),
       .imm(operand_b[4:0]),
       .rd_right(a_shift_right_b)
       );
+  
   shift_right_arith shift_right_arith(
       .rs1(operand_a),
       .imm(operand_b[4:0]),
@@ -79,16 +77,16 @@ module alu(
       );
 
   // Design 4by1 Mux
-  assign mux_2 = (ALUControl[3:0] == 4'b0000)? sum : // add 
-            (ALUControl[3:0] == 4'b0001)? sum :  // sub
-            (ALUControl[3:0] == 4'b0010)? a_shift_left_b : // sll and srl
-            (ALUControl[3:0] == 4'b0111)? sltu :
-            (ALUControl[3:0] == 4'b0011)? slt :	// slt
-            (ALUControl[3:0] == 4'b0101)? a_xor_b : 
-            (ALUControl[3:0] == 4'b0110)? a_shift_right_b : //srl
-            (ALUControl[3:0] == 4'b0100)? a_sr_arith_b : //sra
-            (ALUControl[3:0] == 4'b1000)? a_or_b : 
-            (ALUControl[3:0] == 4'b1001)? a_and_b : 32'h00000000;
+  assign mux_2 =  (ALUControl[3:0] == 4'b0000)? sum : // add 
+                  (ALUControl[3:0] == 4'b0001)? sum :  // sub
+                  (ALUControl[3:0] == 4'b0010)? a_shift_left_b : // sll and srl
+                  (ALUControl[3:0] == 4'b0111)? sltu :
+                  (ALUControl[3:0] == 4'b0011)? slt :	// slt
+                  (ALUControl[3:0] == 4'b0101)? a_xor_b : 
+                  (ALUControl[3:0] == 4'b0110)? a_shift_right_b : //srl
+                  (ALUControl[3:0] == 4'b0100)? a_sr_arith_b : //sra
+                  (ALUControl[3:0] == 4'b1000)? a_or_b : 
+                  (ALUControl[3:0] == 4'b1001)? a_and_b : 32'h00000000;
 
   assign Result = mux_2;
 
@@ -103,6 +101,7 @@ module alu(
 
 
 endmodule
+
 module shift_left(
   input logic [31:0] rs1,
   input logic [4:0] imm,
