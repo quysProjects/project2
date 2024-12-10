@@ -22,11 +22,9 @@ module Manager_AHB #(
     input  logic                    HREADY,     // Transfer done
     input  logic                    HRESP,      // Transfer response
 
-    // Additional Signals to LSU
-    input  logic                    i_core_mngr_unsign,
-    output logic                    o_mngr_sub_unsign,
 
     // Master Interface Signals
+	
     input  logic                    req_read,   // Read request
     input  logic                    req_write,  // Write request
     input  logic [ADDR_WIDTH-1:0]   req_addr,   // Request address
@@ -34,7 +32,7 @@ module Manager_AHB #(
     input  logic [2:0]              req_size,   // Request size
     input  logic [2:0]              req_burst,  // Burst type
     output logic                    req_ready,  // Ready to accept request
-    output logic                    resp_valid, // Response valid
+    output logic                    resp_read, // Response valid
     output logic [DATA_WIDTH-1:0]   resp_rdata  // Read data
 );
 
@@ -49,7 +47,6 @@ module Manager_AHB #(
         ST_IDLE,
         ST_ADDR,
         ST_DATA,
-        ST_WAIT,
         ST_ERROR
     } state_t;
 
@@ -65,10 +62,15 @@ module Manager_AHB #(
     logic                  req_valid;
     logic                  req_valid_1;
     logic                  unsign_reg;
+	logic 				   stall	;
+	
     
     // Request valid detection
-    assign req_valid = req_write || req_read;
-
+	assign stall = !HREADY;
+	always_comb begin
+		if (!stall)
+			req_valid  = req_write || req_read;
+	end
     // Sequential logic
     always_ff @(posedge HCLK or negedge HRESETn) begin
         if (!HRESETn) begin
@@ -86,14 +88,14 @@ module Manager_AHB #(
         else begin
             current_state <= next_state;
             
-            if (req_valid) begin
+            if (req_valid&&!stall) begin
                 req_valid_1  <= 1'b1;
                 addr_reg     <= req_addr;
                 size_reg     <= req_size;
 				wdata_reg    <= req_wdata;
                 burst_reg    <= req_burst;
                 write_reg    <= req_write;
-                unsign_reg   <= i_core_mngr_unsign;
+				
                 
                 // Calculate burst count
                 case (req_burst)
@@ -122,16 +124,23 @@ module Manager_AHB #(
         end
 		
 		//delay for HWDATA
-		if (req_valid_1) begin 
-		HWDATA <= wdata_reg;
-		end
+
 		
     end
 
+    always_ff @(posedge HCLK) begin
+		case(current_state) 
+			ST_ADDR:begin      
+				if (req_valid_1) begin 
+					HWDATA <= wdata_reg;
+						end  
+					end	
+		endcase
+	end
     // Next state logic
     always_comb begin
         next_state = current_state;
-        
+
         case (current_state)
             ST_IDLE: begin
                 if (req_valid)
@@ -139,35 +148,23 @@ module Manager_AHB #(
             end
             
             ST_ADDR: begin
-                if (HREADY)
+			
                     next_state = ST_DATA;
-                else
-                    next_state = ST_WAIT;
             end
             
-            ST_DATA: begin
-                if (HREADY) begin
-                    if (HRESP)
-                        next_state = ST_ERROR;
-                    else if (burst_active && burst_count > 0)
-                        next_state = ST_WAIT;
-                    else if (req_valid_1)
-                        next_state = ST_DATA;
-                    else
-                        next_state = ST_IDLE;
-                end
-                else
-                    next_state = ST_WAIT;
-            end
+          ST_DATA: begin
+            if (HREADY) begin
+                if (HRESP)
+                    next_state = ST_ERROR;
+                else if (burst_active && burst_count > 0)
+                    next_state = ST_ADDR;
+                else if (req_valid_1)
+                    next_state = ST_ADDR;
+                else 
+                    next_state = ST_IDLE; 
+            end else next_state = ST_DATA;
+        end
             
-            ST_WAIT: begin
-                if (HREADY) begin
-                    if (burst_active && burst_count > 0)
-                        next_state = ST_ADDR;
-                    else
-                        next_state = ST_IDLE;
-                end
-            end
             
             ST_ERROR: begin
                 if (HREADY)
@@ -181,52 +178,34 @@ module Manager_AHB #(
     // Output logic
     always_comb begin
         // Default assignments
-        HTRANS     = IDLE;
-        HWRITE     = write_reg;
-        HSIZE      = size_reg;
         HBURST     = burst_reg;
         HPROT      = 4'b0011;
-        HADDR      = addr_reg;
-        req_ready  = 1'b0;
-        resp_valid = 1'b0;
-        resp_rdata = HRDATA;
-        o_mngr_sub_unsign = unsign_reg;
-
+		HWRITE     = 1'b0;
+		resp_read  = 1'b0;
         case (current_state)
             ST_IDLE: begin
-                req_ready = 1'b1;
                 if (req_valid) begin
                     HTRANS = NONSEQ;
                 end
             end
-            
             ST_ADDR: begin
                 if (HREADY) begin
-                    HTRANS = burst_active ? SEQ : NONSEQ;
+					HTRANS = NONSEQ;
+					HSIZE  = size_reg; 
+					HADDR  = addr_reg;
+					HWRITE = write_reg; 
+				    resp_read = req_read; 
+
                 end
             end
             
             ST_DATA: begin
-                if (HREADY) begin
-                    resp_valid = ~write_reg;  // Valid only for reads
-                    if (!burst_active || burst_count == 0) begin
-                        req_ready = 1'b1;
-                        HTRANS = IDLE;
-                    end
-                    else begin
-                        HTRANS = SEQ;
-                    end
-                end
+		    resp_rdata = HRDATA;
+			HTRANS = NONSEQ;
             end
             
-            ST_WAIT: begin
-                if (burst_active && burst_count > 0) begin
-                    HTRANS = SEQ;
-                end
-            end
             
             ST_ERROR: begin
-                req_ready = 1'b1;
             end
         endcase
     end
