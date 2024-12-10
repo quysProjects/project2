@@ -62,15 +62,16 @@ module Manager_AHB #(
     logic                  req_valid;
     logic                  req_valid_1;
     logic                  unsign_reg;
-	logic 				   stall	;
+	logic 		   stall	;
 	
     
     // Request valid detection
 	assign stall = !HREADY;
 	always_comb begin
-		if (!stall)
+		if (HREADY)
 			req_valid  = req_write || req_read;
 	end
+	
     // Sequential logic
     always_ff @(posedge HCLK or negedge HRESETn) begin
         if (!HRESETn) begin
@@ -88,11 +89,11 @@ module Manager_AHB #(
         else begin
             current_state <= next_state;
             
-            if (req_valid&&!stall) begin
+            if (req_valid) begin
                 req_valid_1  <= 1'b1;
                 addr_reg     <= req_addr;
                 size_reg     <= req_size;
-				wdata_reg    <= req_wdata;
+		wdata_reg    <= req_wdata;
                 burst_reg    <= req_burst;
                 write_reg    <= req_write;
 				
@@ -117,26 +118,12 @@ module Manager_AHB #(
                     default: addr_reg <= addr_reg + 4;
                 endcase
                 burst_count <= burst_count - 1;
-            end
-            else begin
+            end else begin
                 req_valid_1 <= 1'b0;
             end
-        end
-		
-		//delay for HWDATA
-
-		
+        end		
     end
-
-    always_ff @(posedge HCLK) begin
-		case(current_state) 
-			ST_ADDR:begin      
-				if (req_valid_1) begin 
-					HWDATA <= wdata_reg;
-						end  
-					end	
-		endcase
-	end
+	
     // Next state logic
     always_comb begin
         next_state = current_state;
@@ -147,8 +134,7 @@ module Manager_AHB #(
                     next_state = ST_ADDR;
             end
             
-            ST_ADDR: begin
-			
+            ST_ADDR: begin	
                     next_state = ST_DATA;
             end
             
@@ -180,8 +166,8 @@ module Manager_AHB #(
         // Default assignments
         HBURST     = burst_reg;
         HPROT      = 4'b0011;
-		HWRITE     = 1'b0;
-		resp_read  = 1'b0;
+	HWRITE     = 1'b0;
+	resp_read  = 1'b0;
         case (current_state)
             ST_IDLE: begin
                 if (req_valid) begin
@@ -200,6 +186,7 @@ module Manager_AHB #(
             end
             
             ST_DATA: begin
+		    HWDATA = wdata_reg;
 		    resp_rdata = HRDATA;
 			HTRANS = NONSEQ;
             end
